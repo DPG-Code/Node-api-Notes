@@ -43,10 +43,9 @@ app.get('/', (request, response) => {
 })
 
 // GET ALL NOTES
-app.get('/api/notes', (request, response, next) => {
-  Note.find({}).then(notes => {
-    response.json(notes)
-  }).catch(next)
+app.get('/api/notes', async (request, response, next) => {
+  const notes = await Note.find({})
+  response.json(notes)
 })
 
 // GET NOTE
@@ -78,15 +77,19 @@ app.put('/api/notes/:id', (request, response, next) => {
 })
 
 // DELETE NOTE
-app.delete('/api/notes/:id', (request, response, next) => {
+app.delete('/api/notes/:id', async (request, response, next) => {
   const { id } = request.params
-  Note.findByIdAndDelete(id).then(() => {
+  try {
+    const res = await Note.findByIdAndDelete(id)
+    if (res === null) return response.sendStatus(404)
     response.status(204).end()
-  }).catch(next)
+  } catch (error) {
+    next(error)
+  }
 })
 
 // ADD NEW NOTE
-app.post('/api/notes', (request, response, next) => {
+app.post('/api/notes', async (request, response, next) => {
   const note = request.body
 
   if (!note || !note.content) {
@@ -101,9 +104,16 @@ app.post('/api/notes', (request, response, next) => {
     important: note.important || false
   })
 
-  newNote.save().then(savedNote => {
+  // newNote.save().then(savedNote => {
+  //   response.status(201).json(savedNote)
+  // }).catch(next)
+
+  try {
+    const savedNote = await newNote.save()
     response.status(201).json(savedNote)
-  }).catch(next)
+  } catch (error) {
+    next(error)
+  }
 })
 
 // ERROR SENTRY
@@ -114,6 +124,8 @@ app.use(notFoud)
 app.use(handleErrors)
 
 const PORT = process.env.PORT
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
+
+module.exports = { app, server }
