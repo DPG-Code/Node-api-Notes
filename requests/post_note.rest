@@ -2,6 +2,7 @@ POST  http://localhost:3001/api/notes
 Content-Type: application/json
 
 {
-    "content" : "Nota creada correctamente",
-    "important" : true
+    "content" : "Nota de DPG-Code",
+    "important" : true,
+    "userId": "63074e1fc309205ebc86f991"
 }

@@ -8,9 +8,11 @@ const logger = require('./loggerMiddleware')
 const Note = require('./models/Note')
 const notFoud = require('./middleware/notFound')
 const handleErrors = require('./middleware/handleErrors')
+const usersRouters = require('./controllers/users')
 
 const Sentry = require('@sentry/node')
 const Tracing = require('@sentry/tracing')
+const User = require('./models/User')
 
 const app = express()
 
@@ -44,7 +46,10 @@ app.get('/', (request, response) => {
 
 // GET ALL NOTES
 app.get('/api/notes', async (request, response, next) => {
-  const notes = await Note.find({})
+  const notes = await Note.find({}).populate('user', { // populate is equal to join, get information from note ref
+    username: 1, // 1 = true, 0 = false
+    name: 1
+  })
   response.json(notes)
 })
 
@@ -90,36 +95,40 @@ app.delete('/api/notes/:id', async (request, response, next) => {
 
 // ADD NEW NOTE
 app.post('/api/notes', async (request, response, next) => {
-  const note = request.body
+  const { content, important = false, userId } = request.body
 
-  if (!note || !note.content) {
+  const user = await User.findById(userId)
+
+  if (!content) {
     return response.status(400).json({
       error: 'note.content is missing'
     })
   }
 
   const newNote = new Note({
-    content: note.content,
+    content,
     date: new Date(),
-    important: note.important || false
+    important,
+    user: user._id // _id because is not json
   })
-
-  // newNote.save().then(savedNote => {
-  //   response.status(201).json(savedNote)
-  // }).catch(next)
 
   try {
     const savedNote = await newNote.save()
+
+    user.notes = user.notes.concat(savedNote._id) // _id because is not json
+    await user.save()
+
     response.status(201).json(savedNote)
   } catch (error) {
     next(error)
   }
 })
 
-// ERROR SENTRY
-app.use(Sentry.Handlers.errorHandler())
+// USER
+app.use('/api/users', usersRouters)
 
 // ERRORS
+app.use(Sentry.Handlers.errorHandler())
 app.use(notFoud)
 app.use(handleErrors)
 
