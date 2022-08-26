@@ -4,15 +4,19 @@ require('./mongo') // require directly because this is executed in in mongo.js
 // import express from 'express' -> Js modules imports
 const express = require('express')
 const cors = require('cors')
-const logger = require('./loggerMiddleware')
 const Note = require('./models/Note')
+const User = require('./models/User')
+
+const logger = require('./loggerMiddleware')
 const notFoud = require('./middleware/notFound')
 const handleErrors = require('./middleware/handleErrors')
+const userExtractor = require('./middleware/userExtractor')
+
 const usersRouters = require('./controllers/users')
+const loginRouter = require('./controllers/login')
 
 const Sentry = require('@sentry/node')
 const Tracing = require('@sentry/tracing')
-const User = require('./models/User')
 
 const app = express()
 
@@ -64,7 +68,7 @@ app.get('/api/notes/:id', (request, response, next) => {
 })
 
 // CHANGE NOTE
-app.put('/api/notes/:id', (request, response, next) => {
+app.put('/api/notes/:id', userExtractor, (request, response, next) => {
   const { id } = request.params
   const note = request.body
   // response.json(note)
@@ -82,7 +86,7 @@ app.put('/api/notes/:id', (request, response, next) => {
 })
 
 // DELETE NOTE
-app.delete('/api/notes/:id', async (request, response, next) => {
+app.delete('/api/notes/:id', userExtractor, async (request, response, next) => {
   const { id } = request.params
   try {
     const res = await Note.findByIdAndDelete(id)
@@ -94,9 +98,11 @@ app.delete('/api/notes/:id', async (request, response, next) => {
 })
 
 // ADD NEW NOTE
-app.post('/api/notes', async (request, response, next) => {
-  const { content, important = false, userId } = request.body
+app.post('/api/notes', userExtractor, async (request, response, next) => {
+  const { content, important = false } = request.body
 
+  // User Id fro request
+  const { userId } = request
   const user = await User.findById(userId)
 
   if (!content) {
@@ -126,6 +132,7 @@ app.post('/api/notes', async (request, response, next) => {
 
 // USER
 app.use('/api/users', usersRouters)
+app.use('/api/login', loginRouter)
 
 // ERRORS
 app.use(Sentry.Handlers.errorHandler())
