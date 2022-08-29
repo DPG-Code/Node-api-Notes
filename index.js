@@ -134,6 +134,12 @@ app.post('/api/notes', userExtractor, async (request, response, next) => {
 app.use('/api/users', usersRouters)
 app.use('/api/login', loginRouter)
 
+// anyone dont use this route
+if (process.env.NODE_ENV === 'test') {
+  const testingRouter = require('./controllers/testing')
+  app.use('/api/testing', testingRouter)
+}
+
 // ERRORS
 app.use(Sentry.Handlers.errorHandler())
 app.use(notFoud)
