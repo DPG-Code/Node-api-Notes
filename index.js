@@ -23,7 +23,8 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 app.use(logger)
-app.use(express.static('../ListNotes/dist'))
+// app.use(express.static('../ListNotes/dist'))
+app.use(express.static('./dist'))
 
 Sentry.init({
   dsn: 'https://d1edbcbf6de64824975e9687fc0f1666@o1372405.ingest.sentry.io/6677298',
