@@ -22,8 +22,8 @@ const app = express()
 
 app.use(cors())
 app.use(express.json())
-app.use('/images', express.static('images'))
 app.use(logger)
+app.use(express.static('../ListNotes/dist'))
 
 Sentry.init({
   dsn: 'https://d1edbcbf6de64824975e9687fc0f1666@o1372405.ingest.sentry.io/6677298',
@@ -41,12 +41,12 @@ app.use(Sentry.Handlers.requestHandler())
 app.use(Sentry.Handlers.tracingHandler())
 
 // HOME
-app.get('/', (request, response) => {
-  console.log(request.id)
-  console.log(request.ips)
-  console.log(request.originalUrl)
-  response.send('<h1>Hello World!</h1>')
-})
+// app.get('/', (request, response) => {
+//   console.log(request.id)
+//   console.log(request.ips)
+//   console.log(request.originalUrl)
+//   response.send('<h1>Hello World!</h1>')
+// })
 
 // GET ALL NOTES
 app.get('/api/notes', async (request, response, next) => {
