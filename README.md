@@ -11,6 +11,8 @@ Api and backend for notes app.
 - Mongoose
 - Jest and Supertest
 
+Username: DPG-Code / Password: 123456
+
 ## Contact 📭
 
 **Daniel Prieto Gaviria @DPG-Code** - prietogaviriadaniel@gmail.com
