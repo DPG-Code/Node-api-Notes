@@ -5,6 +5,7 @@ const { Schema, model } = mongoose
 const noteSchema = new Schema({
   content: String,
   date: Date,
+  color: String,
   important: Boolean,
   user: {
     type: Schema.Types.ObjectId,

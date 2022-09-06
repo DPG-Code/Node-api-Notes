@@ -115,6 +115,7 @@ app.post('/api/notes', userExtractor, async (request, response, next) => {
   const newNote = new Note({
     content,
     date: new Date(),
+    color: Math.floor(Math.random() * 5).toString(),
     important,
     user: user._id // _id because is not json
   })
