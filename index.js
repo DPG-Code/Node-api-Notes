@@ -29,25 +29,13 @@ app.use(express.static('./dist'))
 Sentry.init({
   dsn: 'https://d1edbcbf6de64824975e9687fc0f1666@o1372405.ingest.sentry.io/6677298',
   integrations: [
-    // enable HTTP calls tracing
     new Sentry.Integrations.Http({ tracing: true }),
-    // enable Express.js middleware tracing
     new Tracing.Integrations.Express({ app })
   ],
   tracesSampleRate: 1.0
 })
-// transaction/span/breadcrumb is attached to its own Hub instance
 app.use(Sentry.Handlers.requestHandler())
-// TracingHandler creates a trace for every incoming request
 app.use(Sentry.Handlers.tracingHandler())
-
-// HOME
-// app.get('/', (request, response) => {
-//   console.log(request.id)
-//   console.log(request.ips)
-//   console.log(request.originalUrl)
-//   response.send('<h1>Hello World!</h1>')
-// })
 
 // GET ALL NOTES
 app.get('/api/notes', async (request, response, next) => {
@@ -55,6 +43,7 @@ app.get('/api/notes', async (request, response, next) => {
     username: 1, // 1 = true, 0 = false
     name: 1
   })
+
   response.json(notes)
 })
 
@@ -100,20 +89,21 @@ app.delete('/api/notes/:id', userExtractor, async (request, response, next) => {
 
 // ADD NEW NOTE
 app.post('/api/notes', userExtractor, async (request, response, next) => {
-  const { content, important = false } = request.body
+  const { content, description = '...', important = false } = request.body
 
-  // User Id fro request
+  // User Id from request
   const { userId } = request
   const user = await User.findById(userId)
 
   if (!content) {
     return response.status(400).json({
-      error: 'note.content is missing'
+      error: 'Title is missing!'
     })
   }
 
   const newNote = new Note({
     content,
+    description,
     date: new Date(),
     color: Math.floor(Math.random() * 5).toString(),
     important,

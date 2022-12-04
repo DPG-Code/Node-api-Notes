@@ -4,6 +4,7 @@ const { Schema, model } = mongoose
 // Model Note
 const noteSchema = new Schema({
   content: String,
+  description: String,
   date: Date,
   color: String,
   important: Boolean,
